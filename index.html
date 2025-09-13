@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blood Bank Compatibility Report</title>
+    <!-- Home screen icon for iOS and Android -->
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <!-- Theme color for mobile browsers -->
+    <meta name="theme-color" content="#dc2626">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Add QRCode.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        .report-section {
+            display: none;
+            width: 21cm;
+            min-height: 29.7cm;
+            padding: 1cm;
+            color: #333;
+            margin: 0 auto;
+            position: relative;
+        }
+        @media print {
+            .form-container, .action-buttons, .technician-selector, .report-section .instructions {
+                display: none !important;
+            }
+            .report-section {
+                display: block;
+                box-shadow: none;
+            }
+            .print-hidden {
+                display: none !important;
+            }
+            .report-section .instructions {
+                display: block !important;
+            }
+        }
+        .report-header-logo-img {
+            height: 90px;
+            width: auto;
+        }
+        .report-footer-p {
+            font-size: 8.5pt;
+        }
+        .report-footer-strong {
+            font-size: 7.5pt;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 p-4 min-h-screen flex items-center justify-center">
+
+    <div class="max-w-4xl w-full mx-auto bg-white rounded-xl shadow-lg p-6 sm:p-10">
+        <!-- Form Section -->
+        <div class="form-container">
+            <!-- Patient Information -->
+            <div class="bg-white p-4 rounded-lg mb-4 border border-slate-200">
+                <h3 class="text-sm sm:text-base font-bold text-red-600 mb-2 border-b-2 border-red-100 pb-2">Patient Information</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="col-span-1">
+                        <label for="patientName" class="block text-xs font-medium text-gray-600 mb-1">Patient's Name</label>
+                        <input type="text" id="patientName" placeholder="Enter full name" class="w-full px-3 py-2 border rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500" />
+                    </div>
+                    <div class="col-span-1">
+                        <label for="patientAge" class="block text-xs font-medium text-gray-600 mb-1">Age</label>
+                        <input type="number" id="patientAge" placeholder="Enter age" class="w-full px-3 py-2 border rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500" />
+                    </div>
+                    <div class="col-span-1">
+                        <label for="patientGender" class="block text-xs font-medium text-gray-600 mb-1">Gender</label>
+                        <select id="patientGender" class="w-full px-3 py-2 border rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <option value="">Select Gender</option>
+                            <option value="MALE">MALE</option>
+                            <option value="FEMALE">FEMALE</option>
+                            <option value="OTHER">OTHER</option>
+                        </select>
+                    </div>
+                    <div class="col-span-1">
+                        <label for="patientBloodGroup" class="block text-xs font-medium text-gray-600 mb-1">Blood Group & Rh</label>
+                        <select id="patientBloodGroup" class="w-full px-3 py-2 border rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <option value="">Select Blood Group</option>
+                            <option value="A POSITIVE">A POSITIVE</option>
+                            <option value="A NEGATIVE">A NEGATIVE</option>
+                            <option value="B POSITIVE">B POSITIVE</option>
+                            <option value="B NEGATIVE">B NEGATIVE</option>
+                            <option value="AB POSITIVE">AB POSITIVE</option>
+                            <option value="AB NEGATIVE">AB NEGATIVE</option>
+                            <option value="O POSITIVE">O POSITIVE</option>
+                            <option value="O NEGATIVE">O NEGATIVE</option>
+                        </select>
+                    </div>
+                    <div class="col-span-1">
+                        <label for="patientWard" class="block text-xs font-medium text-gray-600 mb-1">Ward/Unit</label>
+                        <input type="text" id="patientWard" placeholder="Enter ward/unit" class="w-full px-3 py-2 border rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500" />
+                    </div>
+                    <div class="col-span-1">
+                        <label for="patientID" class="block text-xs font-medium text-gray-600 mb-1">Patient ID/CR No.</label>
+                        <input type="text" id="patientID" placeholder="Enter patient ID" class="w-full px-3 py-2 border rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Blood Units -->
+            <div class="bg-white p-4 rounded-lg mb-4 border border-slate-200">
+                <h3 class="text-sm sm:text-base font-bold text-red-600 mb-2 border-b-2 border-red-100 pb-2">Blood Unit Information</h3>
+                <div id="bloodUnits">
+                    <div class="bg-slate-50 p-3 rounded-md border border-gray-300 mb-3" id="unit1">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-sm font-medium text-gray-800">Blood Unit #1</h4>
+                            <button class="remove-unit bg-red-600 text-white text-xs font-bold px-2 py-1 rounded hover:bg-red-700 transition" onclick="removeUnit(1)">Remove</button>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <div>
+                                <label for="crossMatchNo1" class="block text-xs font-medium text-gray-600 mb-1">Cross Match No.</label>
+                                <input type="text" id="crossMatchNo1" placeholder="Enter cross match number" class="w-full px-3 py-2 border rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500" />
+                            </div>
+                            <div>
+                                <label for="bagNo1" class="block text-xs font-medium text-gray-600 mb-1">Bag No.</label>
+                                <div class="flex items-center">
+                                    <select id="bagPrefix1" class="px-3 py-2 border rounded-l-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500 w-1/3">
+                                        <option value="C-">C-</option>
+                                        <option value="I-">I-</option>
+                                    </select>
+                                    <input type="text" id="bagNo1" placeholder="Enter bag number" class="w-full px-3 py-2 border rounded-r-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500" />
+                                </div>
+                            </div>
+                            <div>
+                                <label for="unitBloodGroup1" class="block text-xs font-medium text-gray-600 mb-1">Unit Blood Group & Rh</label>
+                                <select id="unitBloodGroup1" class="unit-blood-group w-full px-3 py-2 border rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500">
+                                    <option value="">Select Blood Group</option>
+                                    <option value="A POSITIVE">A POSITIVE</option>
+                                    <option value="A NEGATIVE">A NEGATIVE</option>
+                                    <option value="B POSITIVE">B POSITIVE</option>
+                                    <option value="B NEGATIVE">B NEGATIVE</option>
+                                    <option value="AB POSITIVE">AB POSITIVE</option>
+                                    <option value="AB NEGATIVE">AB NEGATIVE</option>
+                                    <option value="O POSITIVE">O POSITIVE</option>
+                                    <option value="O NEGATIVE">O NEGATIVE</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="volume1" class="block text-xs font-medium text-gray-600 mb-1">Volume (ml)</label>
+                                <input type="text" id="volume1" placeholder="Enter volume" class="w-full px-3 py-2 border rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500" />
+                            </div>
+                            <div>
+                                <label for="collectionDate1" class="block text-xs font-medium text-gray-600 mb-1">Date of Collection</label>
+                                <input type="date" id="collectionDate1" class="w-full px-3 py-2 border rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500" />
+                            </div>
+                            <div>
+                                <label for="expiryDate1" class="block text-xs font-medium text-gray-600 mb-1">Date of Expiry</label>
+                                <input type="date" id="expiryDate1" class="w-full px-3 py-2 border rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="add-unit-btn bg-green-600 text-white text-sm font-bold px-4 py-2 rounded-md mt-4 hover:bg-green-700 transition" onclick="addUnit()">+ Add Another Blood Unit</button>
+            </div>
+
+            <!-- Other Information -->
+            <div class="bg-white p-4 rounded-lg mb-4 border border-slate-200">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="col-span-1">
+                        <label for="reservationDate" class="block text-xs font-medium text-gray-600 mb-1">Reservation Till</label>
+                        <input type="date" id="reservationDate" class="w-full px-3 py-2 border rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500" />
+                    </div>
+                    <div class="col-span-1">
+                        <label for="technicianSelect" class="block text-xs font-medium text-gray-600 mb-1">Cross Match Done By:</label>
+                        <select id="technicianSelect" class="w-full px-3 py-2 border rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500">
+                            <option value="SAJITH B.S.">SAJITH B.S.</option>
+                            <option value="SATHEESH MANI">SATHEESH MANI</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Print Button -->
+            <div class="mt-4 flex justify-center">
+                <button class="print-btn bg-blue-600 text-white text-base font-bold px-6 py-3 rounded-md hover:bg-blue-700 transition" onclick="generateAndPrintReport()">Generate & Print Report</button>
+            </div>
+        </div>
+
+        <!-- Report Section (for Print) -->
+        <div class="report-section" id="reportSection">
+            <div class="header">
+                <div class="logo-bar flex items-center justify-between mb-2">
+                    <div class="logo-left flex-1 flex justify-center items-center">
+                        <img src="https://placehold.co/60x60/d4d4d4/262626?text=Indian+Railways" alt="Indian Railways Logo" class="report-header-logo-img" />
+                    </div>
+                    <div class="heading-center flex-2 text-center">
+                        <h2 class="font-bold text-sm sm:text-base md:text-lg mb-1">CENTRAL RAILWAY</h2>
+                        <p class="font-normal text-xs mb-1">Bharatratna Dr. Babasaheb Ambedkar Memorial Hospital, Byculla, Mumbai-27</p>
+                        <p class="font-bold text-xs mb-1">BLOOD STORAGE CENTRE</p>
+                        <p class="font-bold text-xs">Licence No.: BSC/GM-03/2013</p>
+                    </div>
+                    <div class="logo-right flex-1 flex justify-center items-center">
+                        <img src="https://placehold.co/90x90/d4d4d4/262626?text=Blood+Bank" alt="Blood Storage Centre Logo" class="report-header-logo-img" />
+                    </div>
+                </div>
+            </div>
+            <div class="report-title-container text-center">
+                <div class="document-date text-xs font-bold text-right mb-4">Date: <span id="reportDate"></span></div>
+                <h2 class="report-title text-base sm:text-lg font-normal text-red-600 mb-4">COMPATIBILITY REPORT</h2>
+            </div>
+            <div class="patient-info-flex flex relative mb-4">
+                <div class="patient-info-left flex-1 pr-8">
+                    <table class="w-full border-collapse text-sm">
+                        <tr>
+                            <td class="pr-2 py-1 align-top w-1/4 font-normal">Patient's Name:</td>
+                            <td id="reportPatientName" class="py-1 align-top font-bold"></td>
+                            <td class="pr-2 py-1 align-top w-1/4 font-normal">Blood Group &amp; Rh:</td>
+                            <td id="reportPatientBloodGroup" class="py-1 align-top font-bold"></td>
+                        </tr>
+                        <tr>
+                            <td class="pr-2 py-1 align-top w-1/4 font-normal">Age:</td>
+                            <td id="reportPatientAge" class="py-1 align-top font-bold"></td>
+                            <td class="pr-2 py-1 align-top w-1/4 font-normal">Gender:</td>
+                            <td id="reportPatientGender" class="py-1 align-top font-bold"></td>
+                        </tr>
+                        <tr>
+                            <td class="pr-2 py-1 align-top w-1/4 font-normal">Ward/Unit:</td>
+                            <td id="reportPatientWard" class="py-1 align-top font-bold"></td>
+                            <td class="pr-2 py-1 align-top w-1/4 font-normal">PF / CR No.:</td>
+                            <td id="reportPatientID" class="py-1 align-top font-bold"></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="patient-info-qr absolute right-0 top-0 flex-none w-24 h-24">
+                    <div id="qrCodeContainer" class="w-[75px] h-[75px] bg-white border border-gray-300 flex items-center justify-center"></div>
+                </div>
+            </div>
+            <div class="report-table-container">
+                <table class="report-table w-full border-collapse table-fixed text-sm">
+                    <thead>
+                        <tr>
+                            <th class="border border-gray-300 p-1 text-center font-normal w-[5%]">Sr No</th>
+                            <th class="border border-gray-300 p-1 text-center font-normal w-[10%]">Cross Match No</th>
+                            <th class="border border-gray-300 p-1 text-center font-normal w-[11%]">Bag No</th>
+                            <th class="border border-gray-300 p-1 text-center font-normal w-[15%]">Blood Group & Rh</th>
+                            <th class="border border-gray-300 p-1 text-center font-normal w-[10%]">Vol. in ml.</th>
+                            <th class="border border-gray-300 p-1 text-center font-normal w-[12%]">Date of Collection</th>
+                            <th class="border border-gray-300 p-1 text-center font-normal w-[12%]">Date of Expiry</th>
+                            <th class="border border-gray-300 p-1 text-center font-normal w-[14%]">Compatibility</th>
+                            <th class="border border-gray-300 p-1 text-center font-normal w-[10%]">Date & Time Of Issue</th>
+                            <th class="border border-gray-300 p-1 text-center font-normal w-[7%]">Issued By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div class="report-footer text-xs mt-4">
+                <p class="mb-1">Cross matching has been performed using <strong>Saline, Albumin &amp; Coombs</strong> methods.</p>
+                <p class="mb-1">Blood units are tested Negative for <strong>HIV 1&amp;2, HBsAg, HCV, VDRL, MP &amp; Abnormal Antibodies</strong> </p>
+                <p class="mb-2">Reservation is valid until: <strong><span id="reportReservationDate"></span></strong></p>
+                <p class="text-xs font-bold text-center mb-4">*Please note that after the reservation date, the blood units will be released and will no longer be available for transfusion to this patient.*</p>
+                <div class="signature-line flex justify-between mt-5 pt-2 border-t border-gray-300">
+                    <div class="signature-left flex flex-col items-start">
+                        <div class="text-center w-full">
+                            <div class="font-bold mb-0.5 w-full">Cross Match Done By: <span id="reportTechnicianName"></span></div>
+                            <div class="text-xs text-gray-500 font-normal text-center w-full">CLS</div>
+                        </div>
+                    </div>
+                    <div class="signature-right flex flex-col items-center">
+                        <div class="font-bold mb-0.5">Dr. Ashay D. Amlekar MD (Pathology)</div>
+                        <div class="text-xs text-gray-500 font-normal">Medical Officer</div>
+                    </div>
+                </div>
+                <div class="instructions mt-4 p-2 bg-gray-50 rounded-md border-l-4 border-red-600 text-xs">
+                    <h4 class="text-red-600 mb-1 font-normal text-sm">INSTRUCTIONS FOR TRANSFUSIONIST:</h4>
+                    <ol class="list-decimal list-inside columns-1 sm:columns-2 gap-4 pl-4 text-xs font-normal">
+                        <li>Unit should be collected just prior to starting the transfusion. <strong>Do not store in ward refrigerators.</strong></li>
+                        <li>Keep the blood bag at room temperature for a maximum of 30 mins to bring the temperature to room temperature.</li>
+                        <li>Except in emergency avoid transfusion at night, both for patient's convenience and for transfusion under observation.</li>
+                        <li>Check blood for any physical changes like hemolysis, colour, turbidity etc. Do not transfuse if there is any visible deterioration.</li>
+                        <li>Cross check the blood group, bag no. with those on label and compatibility report.</li>
+                        <li>Administer through the disposable transfusion set with filter.</li>
+                        <li>Enter the time of starting transfusion.</li>
+                        <li>Record the vital signs before and after transfusion.</li>
+                        <li>Normal saline is the only recommended solution for use with blood.</li>
+                        <li>Do not add any drug to the blood.</li>
+                        <li><strong>Do not warm blood.</strong></li>
+                        <li>Do not give IV Avil or Decadron before starting transfusion.</li>
+                        <li>The rate of transfusion depends on the condition of the patient.</li>
+                        <li>Observe the patient for febrile reaction, hematuria and oliguria.</li>
+                        <li>In case of any reaction, stop the transfusion, inform the physician concerned & also intimate us.</li>
+                    </ol>
+                    <p class="mt-3 font-bold text-center">**Blood Unit once issued will not be taken back.**</p>
+                    <p class="mt-3 font-bold text-center">Please note that blood transfusion is a dangerous procedure. Use utmost care.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+<script>
+    let unitCount = 1;
+
+    // A map to store the change listener for each collection date input
+    const collectionDateListeners = new Map();
+
+    window.onload = () => {
+        const reservationDate = new Date();
+        reservationDate.setDate(reservationDate.getDate() + 2);
+        document.getElementById('reservationDate').valueAsDate = reservationDate;
+        
+        document.getElementById('patientBloodGroup').addEventListener('change', (e) => {
+            document.querySelectorAll('.unit-blood-group').forEach(select => select.value = e.target.value);
+        });
+        setAutoExpiryForUnits();
+    };
+
+    function addUnit() {
+        unitCount++;
+        const patientBloodGroup = document.getElementById('patientBloodGroup').value;
+        const bloodUnitsDiv = document.getElementById('bloodUnits');
+        
+        let firstCrossMatchRaw = document.getElementById('crossMatchNo1')?.value || '';
+        let baseNumStr = firstCrossMatchRaw.split('/')[0];
+        let firstCrossMatchNum = parseInt(baseNumStr) || NaN;
+        let newCrossMatchNo = '';
+        if(!isNaN(firstCrossMatchNum)){
+            newCrossMatchNo = (firstCrossMatchNum + unitCount - 1).toString();
+        }
+        
+        const unitDiv = document.createElement('div');
+        unitDiv.className = 'bg-slate-50 p-3 rounded-md border border-gray-300 mb-3';
+        unitDiv.id = `unit${unitCount}`;
+        unitDiv.innerHTML = `
+            <div class="flex justify-between items-center mb-2">
+                <h4 class="text-sm font-medium text-gray-800">Blood Unit #${unitCount}</h4>
+                <button class="remove-unit bg-red-600 text-white text-xs font-bold px-2 py-1 rounded hover:bg-red-700 transition" onclick="removeUnit(${unitCount})">Remove</button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div>
+                    <label for="crossMatchNo${unitCount}" class="block text-xs font-medium text-gray-600 mb-1">Cross Match No.</label>
+                    <input type="text" id="crossMatchNo${unitCount}" placeholder="Enter cross match number" value="${newCrossMatchNo}" class="w-full px-3 py-2 border rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500" />
+                </div>
+                <div>
+                    <label for="bagNo${unitCount}" class="block text-xs font-medium text-gray-600 mb-1">Bag No.</label>
+                    <div class="flex items-center">
+                        <select id="bagPrefix${unitCount}" class="px-3 py-2 border rounded-l-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500 w-1/3">
+                            <option value="C-">C-</option>
+                            <option value="I-">I-</option>
+                        </select>
+                        <input type="text" id="bagNo${unitCount}" placeholder="Enter bag number" class="w-full px-3 py-2 border rounded-r-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500" />
+                    </div>
+                </div>
+                <div>
+                    <label for="unitBloodGroup${unitCount}" class="block text-xs font-medium text-gray-600 mb-1">Unit Blood Group & Rh</label>
+                    <select id="unitBloodGroup${unitCount}" class="unit-blood-group w-full px-3 py-2 border rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <option value="">Select Blood Group</option>
+                        <option value="A POSITIVE" ${patientBloodGroup === 'A POSITIVE' ? 'selected' : ''}>A POSITIVE</option>
+                        <option value="A NEGATIVE" ${patientBloodGroup === 'A NEGATIVE' ? 'selected' : ''}>A NEGATIVE</option>
+                        <option value="B POSITIVE" ${patientBloodGroup === 'B POSITIVE' ? 'selected' : ''}>B POSITIVE</option>
+                        <option value="B NEGATIVE" ${patientBloodGroup === 'B NEGATIVE' ? 'selected' : ''}>B NEGATIVE</option>
+                        <option value="AB POSITIVE" ${patientBloodGroup === 'AB POSITIVE' ? 'selected' : ''}>AB POSITIVE</option>
+                        <option value="AB NEGATIVE" ${patientBloodGroup === 'AB NEGATIVE' ? 'selected' : ''}>AB NEGATIVE</option>
+                        <option value="O POSITIVE" ${patientBloodGroup === 'O POSITIVE' ? 'selected' : ''}>O POSITIVE</option>
+                        <option value="O NEGATIVE" ${patientBloodGroup === 'O NEGATIVE' ? 'selected' : ''}>O NEGATIVE</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="volume${unitCount}" class="block text-xs font-medium text-gray-600 mb-1">Volume (ml)</label>
+                    <input type="text" id="volume${unitCount}" placeholder="Enter volume" class="w-full px-3 py-2 border rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500" />
+                </div>
+                <div>
+                    <label for="collectionDate${unitCount}" class="block text-xs font-medium text-gray-600 mb-1">Date of Collection</label>
+                    <input type="date" id="collectionDate${unitCount}" class="w-full px-3 py-2 border rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500" />
+                </div>
+                <div>
+                    <label for="expiryDate${unitCount}" class="block text-xs font-medium text-gray-600 mb-1">Date of Expiry</label>
+                    <input type="date" id="expiryDate${unitCount}" class="w-full px-3 py-2 border rounded-md text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-red-500" />
+                </div>
+            </div>
+        `;
+        bloodUnitsDiv.appendChild(unitDiv);
+        setAutoExpiryForUnits();
+    }
+
+    function removeUnit(id) {
+        if(unitCount > 1) {
+            document.getElementById(`unit${id}`)?.remove();
+            unitCount--;
+            const units = document.querySelectorAll('#bloodUnits > div');
+            units.forEach((unit, i) => {
+                const newId = i + 1;
+                unit.id = `unit${newId}`;
+                unit.querySelector('h4').textContent = `Blood Unit #${newId}`;
+                unit.querySelector('.remove-unit').setAttribute('onclick', `removeUnit(${newId})`);
+                
+                unit.querySelector(`input[id^="crossMatchNo"]`).id = `crossMatchNo${newId}`;
+                unit.querySelector(`select[id^="bagPrefix"]`).id = `bagPrefix${newId}`;
+                unit.querySelector(`input[id^="bagNo"]`).id = `bagNo${newId}`;
+                unit.querySelector(`select[id^="unitBloodGroup"]`).id = `unitBloodGroup${newId}`;
+                unit.querySelector(`input[id^="volume"]`).id = `volume${newId}`;
+                unit.querySelector(`input[id^="collectionDate"]`).id = `collectionDate${newId}`;
+                unit.querySelector(`input[id^="expiryDate"]`).id = `expiryDate${newId}`;
+            });
+            setAutoExpiryForUnits();
+        }
+    }
+
+    function formatDate(date, short = false) {
+        const pad = (num) => num.toString().padStart(2, '0');
+        if(short) {
+            const day = pad(date.getDate());
+            const month = date.toLocaleString('default', { month: 'short' }).toUpperCase();
+            const year = date.getFullYear().toString().slice(-2);
+            return `${day}-${month}-${year}`;
+        }
+        const day = pad(date.getDate());
+        const month = pad(date.getMonth() + 1);
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+
+    function generateReport() {
+        const patientFields = ['patientName', 'patientAge', 'patientGender', 'patientBloodGroup', 'patientWard', 'patientID'];
+        const patientData = {};
+        patientFields.forEach(id => {
+            patientData[id] = document.getElementById(id).value || 'Not Provided';
+        });
+
+        const technicianName = document.getElementById('technicianSelect').value;
+
+        document.getElementById('reportPatientName').textContent = patientData.patientName;
+        document.getElementById('reportPatientAge').textContent = patientData.patientAge !== 'Not Provided' ? `${patientData.patientAge} Yrs` : 'Not Provided';
+        document.getElementById('reportPatientGender').textContent = patientData.patientGender;
+        document.getElementById('reportPatientBloodGroup').textContent = patientData.patientBloodGroup ? `'${patientData.patientBloodGroup.split(' ')[0]}' ${patientData.patientBloodGroup.split(' ')[1]}` : 'Not Provided';
+        document.getElementById('reportPatientWard').textContent = patientData.patientWard;
+        document.getElementById('reportPatientID').textContent = patientData.patientID;
+        document.getElementById('reportTechnicianName').textContent = technicianName;
+        document.getElementById('reportDate').textContent = formatDate(new Date());
+
+        const reportTableBody = document.querySelector('#reportBloodUnits tbody');
+        reportTableBody.innerHTML = ''; // Clear previous rows
+
+        let qrLines = [];
+        const yearSuffix = new Date().getFullYear().toString().slice(-2);
+
+        for(let i = 1; i <= unitCount; i++) {
+            let crossMatchNo = document.getElementById(`crossMatchNo${i}`)?.value || 'Not Provided';
+            if (crossMatchNo !== 'Not Provided' && crossMatchNo !== '') {
+                let baseNumOnly = crossMatchNo.split('/')[0];
+                crossMatchNo = baseNumOnly + '/' + yearSuffix;
+            }
+
+            let bagPrefix = document.getElementById(`bagPrefix${i}`)?.value || 'C-';
+            let bagNoValue = document.getElementById(`bagNo${i}`)?.value || 'Not Provided';
+            let bagNo = (bagNoValue !== 'Not Provided' && bagNoValue !== '') ? bagPrefix + bagNoValue : 'Not Provided';
+            const bg = document.getElementById(`unitBloodGroup${i}`)?.value || 'Not Provided';
+            const vol = document.getElementById(`volume${i}`)?.value || 'Not Provided';
+            let collDate = document.getElementById(`collectionDate${i}`)?.value;
+            collDate = collDate ? formatDate(new Date(collDate), true) : 'Not Provided';
+            let expDate = document.getElementById(`expiryDate${i}`)?.value;
+            expDate = expDate ? formatDate(new Date(expDate), true) : 'Not Provided';
+            
+            qrLines.push(`Bag ${i}: Bag No: ${bagNo}, Group: ${bg}, Collection: ${collDate}, Expiry: ${expDate}, Compatible`);
+            
+            const row = reportTableBody.insertRow();
+            row.innerHTML = `
+                <td class="border border-gray-300 p-1 text-center text-sm font-normal">${i}</td>
+                <td class="border border-gray-300 p-1 text-center text-sm font-bold">${crossMatchNo}</td>
+                <td class="border border-gray-300 p-1 text-center text-sm font-bold">${bagNo}</td>
+                <td class="border border-gray-300 p-1 text-center text-sm font-bold">${bg ? `'${bg.split(' ')[0]}' ${bg.split(' ')[1]}` : 'Not Provided'}</td>
+                <td class="border border-gray-300 p-1 text-center text-sm font-bold">${vol} ${vol !== 'Not Provided' ? 'ml.' : ''}</td>
+                <td class="border border-gray-300 p-1 text-center text-sm font-bold">${collDate}</td>
+                <td class="border border-gray-300 p-1 text-center text-sm font-bold">${expDate}</td>
+                <td class="border border-gray-300 p-1 text-center text-sm font-bold">COMPATIBLE</td>
+                <td class="border border-gray-300 p-1 text-center text-sm font-bold"></td>
+                <td class="border border-gray-300 p-1 text-center text-sm font-bold"></td>
+            `;
+        }
+
+        const reservationVal = document.getElementById('reservationDate').value;
+        document.getElementById('reportReservationDate').textContent = reservationVal ? formatDate(new Date(reservationVal)) : 'Not Provided';
+
+        const qrData = `Name: ${patientData.patientName}\nAge: ${patientData.patientAge} Yrs\nGender: ${patientData.patientGender}\nBlood Group: ${patientData.patientBloodGroup}\nCR No.: ${patientData.patientID}\nBlood Units:\n${qrLines.join('\n')}`;
+
+        const qrContainer = document.getElementById('qrCodeContainer');
+        qrContainer.innerHTML = '';
+        new QRCode(qrContainer, { text: qrData, width: 75, height: 75, correctLevel: QRCode.CorrectLevel.M });
+        
+        document.getElementById('reportSection').style.display = 'block';
+        return true;
+    }
+
+    function generateAndPrintReport() {
+        if(generateReport()) {
+            setTimeout(() => {
+                window.print();
+            }, 500);
+        }
+    }
+
+    function setAutoExpiryForUnits() {
+        for (let i = 1; i <= unitCount; i++) {
+            const collectionInput = document.getElementById(`collectionDate${i}`);
+            const expiryInput = document.getElementById(`expiryDate${i}`);
+
+            if (collectionInput && expiryInput) {
+                // Remove existing listener to prevent duplicates
+                const oldListener = collectionDateListeners.get(collectionInput);
+                if (oldListener) {
+                    collectionInput.removeEventListener('change', oldListener);
+                }
+
+                const newListener = function() {
+                    if (this.value) {
+                        const collectionDate = new Date(this.value);
+                        collectionDate.setDate(collectionDate.getDate() + 42);
+                        const year = collectionDate.getFullYear();
+                        const month = (collectionDate.getMonth() + 1).toString().padStart(2, '0');
+                        const day = collectionDate.getDate().toString().padStart(2, '0');
+                        expiryInput.value = `${year}-${month}-${day}`;
+                    }
+                };
+
+                collectionInput.addEventListener('change', newListener);
+                collectionDateListeners.set(collectionInput, newListener);
+            }
+        }
+    }
+</script>
+</body>
+</html>
